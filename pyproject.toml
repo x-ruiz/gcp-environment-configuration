@@ -3,7 +3,8 @@ name = "gcp-environment-configuration"
 version = "1.0.0"
 dependencies = [
   "google-cloud-storage",
-  "requests"
+  "requests",
+  "fire"
 ]
 
 [project.optional-dependencies]
