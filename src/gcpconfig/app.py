@@ -1,7 +1,16 @@
-from utils.project import Project
+import fire
 
+from utils.project import Project
+from utils.logger import get_logger
+
+
+logger = get_logger(__name__)
+
+class App():
+    def create_project(self, name: str, project_id: str):
+        project = Project(name=name, project_id=project_id)
+        project.create_project()
 
 def main():
-    print("Hello World")
-    project = Project(name="GCP ENV CONFIG", project_id="gcp-env-configuration")
-    project.create_project()
+    app = App()
+    fire.Fire(app)
