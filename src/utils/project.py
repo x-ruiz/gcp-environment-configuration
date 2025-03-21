@@ -11,6 +11,7 @@ logger = get_logger(__name__)
 
 class Project:
     url = "https://cloudresourcemanager.googleapis.com/v3/projects/"
+    # TODO: Need to add a billing account property (instance not class)
 
     def __init__(self, project_id: str, name: str = ""):
         self.name = name
@@ -46,11 +47,18 @@ class Project:
         )
         logger.info("\n" + output.stdout.decode("utf-8"))
 
+    # TODO: need to create a method that attaches a project to a billing account
+    # We can assume billing account is created outside this CLI since it has to be done
+    # through UI
+
     def set_apis(self, apis: str):
         logger.info(f"Setting apis for project: {self.project_id} -> apis: {apis}")
         apis = apis.replace(",", " ")
         command = f"gcloud services enable {apis}"
-        subprocess.run(command, shell=True, capture_output=True, check=True)
+        output = subprocess.run(command, shell=True, capture_output=True, check=True)
+        logger.debug("\n" + output.stdout.decode("utf-8"))
+        if output.stderr:
+            logger.error("\n" + output.stderr.decode("utf-8"))
         # Print out enabled apis
         output = subprocess.run(f"gcloud services list --enabled --project {self.project_id}", shell=True, capture_output=True, check=True)
         logger.info("\n" + output.stdout.decode("utf-8"))
