@@ -4,40 +4,43 @@ import os
 import subprocess
 
 from .logger import get_logger
+from .api import Api
 
 logger = get_logger(__name__)
 
 
 class Project:
     url = "https://cloudresourcemanager.googleapis.com/v1/projects/"
-    access_token = subprocess.run(
-        ["gcloud", "auth", "print-access-token"],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip()
 
-    def __init__(self, name: str, project_id: str):
+    def __init__(self, project_id: str, name: str = ""):
         self.name = name
         self.project_id = project_id
 
     def create_project(self):
         logger.info(f"Creating project with name {self.name} and id {self.project_id}")
         data = {"projectId": self.project_id, "name": self.name}
-        try:
-            response = requests.post(
-                self.url,
-                json=data,
-                headers={
-                    "Authorization": f"Bearer {self.access_token}",
-                    "Content-Type": "application/json",
-                },
-            )
-            response.raise_for_status()
-            logger.info(f"Project created | {self.name} | {self.project_id}")
-            logger.debug(f"Response Status Code: {response.status_code}")
-            logger.debug(f"Response Body: {response.json()}")
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error {e}")
-        except json.JSONDecodeError:
-            logger.error("Response is not valid JSON")
+        api = Api()
+        api.request(url=self.url, data=data)
+
+    def set_project(self):
+        logger.info(f"Setting current config project to {self.project_id}")
+        subprocess.run(
+            f"gcloud config set project {self.project_id}",
+            shell=True,
+            capture_output=True,
+            check=True,
+        )
+
+        output = subprocess.run(
+            f"gcloud config list", shell=True, capture_output=True, check=True
+        )
+        logger.info("\n" + output.stdout.decode("utf-8"))
+
+    def set_apis(self, apis: str):
+        logger.info(f"Setting apis for project: {self.project_id} -> apis: {apis}")
+        apis = apis.replace(",", " ")
+        command = f"gcloud services enable {apis}"
+        subprocess.run(command, shell=True, capture_output=True, check=True)
+        # Print out enabled apis
+        output = subprocess.run(f"gcloud services list --enabled --project {self.project_id}", shell=True, capture_output=True, check=True)
+        logger.info("\n" + output.stdout.decode("utf-8"))
