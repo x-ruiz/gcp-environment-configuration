@@ -15,7 +15,7 @@ class Api:
         check=True,
     ).stdout.strip()
 
-    def request(self, url: str, data: dict):
+    def request(self, url: str, data: dict) -> str:
         try:
             response = requests.post(
                 url,
@@ -32,3 +32,4 @@ class Api:
             logger.error(f"Error {e}")
         except json.JSONDecodeError:
             logger.error("Response is not valid JSON")
+        return response.status_code

@@ -14,13 +14,6 @@ class App:
         project.create_project()
         return project
 
-
-    def create_and_set_project(self, name: str, project_id: str):
-        project = Project(name=name, project_id=project_id)
-        project.create_project()
-        logger.info(f"Creating and setting gcloud config project to {project.name}")
-        project.set_project()
-
     def set_api(self, project_id: str, apis: str):
         """Sets one or multiple google apis for a given project id.
 
@@ -30,7 +23,24 @@ class App:
         """
 
         project = Project(project_id=project_id)
+        project.set_project()
         project.set_apis(apis=apis)
+
+    def create_and_set_project(self, name: str, project_id: str):
+        project = Project(name=name, project_id=project_id)
+        project.create_project()
+        logger.info(f"Creating and setting gcloud config project to {project.name}")
+        project.set_project()
+
+    def create_and_set_apis(self, name: str, project_id: str, apis: str):
+        project = Project(name=name, project_id=project_id)
+        success = project.create_project()
+        project.set_project()
+        if success == True:
+            project.set_apis(apis)
+        else:
+            logger.error("Project creation failed, skipping api setting...")
+
 
 
 def main():
