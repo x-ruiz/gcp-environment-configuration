@@ -4,7 +4,8 @@ version = "1.0.0"
 dependencies = [
   "google-cloud-storage",
   "requests",
-  "fire"
+  "fire",
+  "pyyaml"
 ]
 
 [project.optional-dependencies]
