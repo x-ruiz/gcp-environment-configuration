@@ -2,6 +2,7 @@ import json
 import requests
 import os
 import subprocess
+import yaml
 
 from .logger import get_logger
 from .api import Api
@@ -50,6 +51,28 @@ class Project:
     # TODO: need to create a method that attaches a project to a billing account
     # We can assume billing account is created outside this CLI since it has to be done
     # through UI
+
+    def set_billing(self, billing_id: str):
+        # gcloud billings projects link <project_id> --billing-account=<billing_id>
+        self.billing_id = billing_id
+
+    def assign_billing(self) -> bool:
+        logger.info(f"Assigning billing account {self.billing_id} for project {self.project_id}")
+        command = f"gcloud billing projects link {self.project_id} --billing-account={self.billing_id}"
+        subprocess.run(command, shell=True, capture_output=True, check=True)
+        is_billing = self.check_billing()
+
+    def check_billing(self) -> bool:
+        output = subprocess.run(f"gcloud billing projects describe {self.project_id}", shell=True, capture_output=True, check=True)
+        yml = yaml.safe_load(output.stdout.decode("utf-8"))
+        billing_account = yml["billingAccountName"]
+
+        if billing_account == '':
+            logger.warn(f"Billing account not linked to project {self.project_id}")
+            return False
+        else:
+            logger.info(f"Billing account {billing_account} set for project {self.project_id}")
+            return True
 
     def set_apis(self, apis: str):
         logger.info(f"Setting apis for project: {self.project_id} -> apis: {apis}")
