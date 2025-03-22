@@ -33,6 +33,7 @@ class App:
         project = Project(project_id=project_id)
         project.set_project()
         if project.check_billing() == False:
+            logger.error("Please set billing account for project {project.project_id} before setting apis")
             sys.exit(1)
 
         project.set_apis(apis=apis)
@@ -48,7 +49,7 @@ class App:
         success = project.create_project()
         project.set_project()
         if success == True:
-            project.set_apis(apis)
+            set_apis(project_id=project.project_id, apis=apis)
         else:
             logger.error("Project creation failed, skipping api setting...")
 
