@@ -75,13 +75,16 @@ class Project:
             return True
 
     def set_apis(self, apis: str):
-        logger.info(f"Setting apis for project: {self.project_id} -> apis: {apis}")
+        logger.info(f"Setting apis for project: {self.project_id} -> apis: {apis} - this might take a while...")
         apis = apis.replace(",", " ")
         command = f"gcloud services enable {apis}"
         output = subprocess.run(command, shell=True, capture_output=True, check=True)
-        logger.debug("\n" + output.stdout.decode("utf-8"))
+        if output.stdout:
+            logger.debug("\n" + output.stdout.decode("utf-8"))
+
         if output.stderr:
-            logger.error("\n" + output.stderr.decode("utf-8"))
+            logger.debug("\n" + output.stderr.decode("utf-8"))
+
         # Print out enabled apis
         output = subprocess.run(f"gcloud services list --enabled --project {self.project_id}", shell=True, capture_output=True, check=True)
         logger.info("\n" + output.stdout.decode("utf-8"))
